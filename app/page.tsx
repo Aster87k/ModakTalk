@@ -48,21 +48,10 @@ export default function Home() {
     setShowCard(false);
   };
 
-  // 1 2 3 4 5 ...
-  // 5를 보고 있을때는 top이 5, 이전이 4
-  // 이 상태에서 이전버튼을 누르면 5 pop, 4
-  // 이전 질문을 가져오고, 삭제하는 알고리즘
-
   const handleClickPrev = () => {
-    //    let prevIndex = prevQuestionIndexes.at(-1) || -1;
-    // 만약 이전 버튼을 눌렀을때, 현재 보여지고 있는 질문이 이미 prev question stack에 들어간 상태라면
-    // if (currentQuestion === questions[prevIndex])
-    //   prevIndex = prevQuestionIndexes.pop() || -1;
-    //prevIndex = prevQuestionIndexes.pop() || -1;
-
     prevQuestionIndexes.pop();
 
-    let prevIndex = prevQuestionIndexes.at(-1) || -1;
+    const prevIndex = prevQuestionIndexes.at(-1) || -1;
 
     if (prevQuestionIndexes.length === 0) {
       setCurrentQuestion("이전 질문을 모두 확인하였습니다.");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const LoadingDots = ({ className }) => {
+const LoadingDots = ({ className }: { className: string }) => {
   const [dots, setDots] = useState("");
 
   useEffect(() => {

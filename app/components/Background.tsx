@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 
+interface TreeStylePropsType {
+  left: string;
+  width: string;
+  height: string;
+  opacity: number;
+}
 const Background: React.FC = () => {
-  const [treeStyles, setTreeStyles] = useState<any>([]);
+  const [treeStyles, setTreeStyles] = useState<TreeStylePropsType[]>([]);
   useEffect(() => {
     setTreeStyles(
       [...Array(28)].map(() => ({
@@ -18,7 +24,7 @@ const Background: React.FC = () => {
     <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-green-900 to-green-800 overflow-hidden">
       {/* Trees */}
       <div className="absolute bottom-0 left-0 right-0 h-2/3">
-        {treeStyles.map((style, i) => (
+        {treeStyles.map((style: TreeStylePropsType, i: number) => (
           <div
             key={i}
             className="absolute bottom-0 bg-green-800 rounded-t-full"

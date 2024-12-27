@@ -4,7 +4,11 @@ import LoadingDots from "./LoadingDot";
 
 interface QuestionCardProps {
   question: string;
+  onCreateQuestion: () => void;
   onClose: () => void;
+  onPrev: () => void;
+  isLoading: boolean;
+  isDisablePrev: boolean;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -15,7 +19,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   isDisablePrev = false,
   onClose,
 }) => {
-  console.log("isDisablePrev", isDisablePrev);
   return (
     <motion.div
       className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -48,7 +51,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 ? "bg-yellow-700 text-yellow-100 px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-grey-300"
                 : "bg-yellow-700 text-yellow-100 px-4 py-2 rounded hover:bg-yellow-800 transition-colors"
             }
-            onClick={isDisablePrev ? null : onPrev}
+            onClick={isDisablePrev ? undefined : onPrev}
             disabled={isDisablePrev}
           >
             이전
