@@ -1,101 +1,145 @@
-import Image from "next/image";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Background from "./components/Background";
+import QuestionCard from "./components/QuestionCard";
+import SplashScreen from "./components/SplashScreen";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [showSplash, setShowSplash] = useState(true);
+  const [showCard, setShowCard] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [prevQuestionIndexes, setPrevQuestionIndexes] = useState<Array<number>>(
+    []
+  );
+  const [questionCardLoading, setQuestionCardLoading] =
+    useState<boolean>(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
+
+  const getRandomIndex = () => {
+    return Math.floor(Math.random() * questions.length);
+  };
+
+  const wrapProgressBar = (cb = () => {}) => {
+    return () => {
+      setQuestionCardLoading(true);
+      cb();
+      setTimeout(() => {
+        setQuestionCardLoading(false);
+      }, 500);
+    };
+  };
+
+  const handleShowQuestion = () => {
+    const randomIndex = getRandomIndex();
+    const question = questions[randomIndex];
+    prevQuestionIndexes.push(randomIndex);
+    setPrevQuestionIndexes([...prevQuestionIndexes]);
+    setCurrentQuestion(question);
+    setShowCard(true);
+  };
+
+  const handleCloseCard = () => {
+    setShowCard(false);
+  };
+
+  // 1 2 3 4 5 ...
+  // 5를 보고 있을때는 top이 5, 이전이 4
+  // 이 상태에서 이전버튼을 누르면 5 pop, 4
+  // 이전 질문을 가져오고, 삭제하는 알고리즘
+
+  const handleClickPrev = () => {
+    //    let prevIndex = prevQuestionIndexes.at(-1) || -1;
+    // 만약 이전 버튼을 눌렀을때, 현재 보여지고 있는 질문이 이미 prev question stack에 들어간 상태라면
+    // if (currentQuestion === questions[prevIndex])
+    //   prevIndex = prevQuestionIndexes.pop() || -1;
+    //prevIndex = prevQuestionIndexes.pop() || -1;
+
+    prevQuestionIndexes.pop();
+
+    let prevIndex = prevQuestionIndexes.at(-1) || -1;
+
+    if (prevQuestionIndexes.length === 0) {
+      setCurrentQuestion("이전 질문을 모두 확인하였습니다.");
+    } else setCurrentQuestion(questions[prevIndex]);
+
+    setPrevQuestionIndexes([...prevQuestionIndexes]);
+  };
+
+  const handleClickCreateQuestion = () => {
+    const randomIndex = getRandomIndex();
+    const question = questions[randomIndex];
+    setCurrentQuestion(question);
+    prevQuestionIndexes.push(randomIndex);
+    setPrevQuestionIndexes([...prevQuestionIndexes]);
+  };
+
+  useEffect(() => {
+    const loadText = async () => {
+      try {
+        const response = await fetch("/questions.txt");
+        const content = await response.text();
+        const jsonQuestionArray = content
+          .split("\n")
+          .map((line) => line.trim());
+        setQuestions(jsonQuestionArray || []);
+      } catch (error) {
+        alert("질문 목록을 불러오는데 실패했습니다:");
+        console.log(error);
+      }
+    };
+
+    loadText();
+  }, []);
+
+  return (
+    <main className="min-h-screen flex justify-center">
+      <Background />
+      <AnimatePresence>
+        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      </AnimatePresence>
+      <div className="absolute flex flex-col items-center justify-end min-h-screen p-4 pb-24">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 3.5, duration: 1 }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <h1 className="text-4xl font-bold text-yellow-100 mb-8 text-center">
+            도란도란 모닥톡
+          </h1>
+          <p className="text-lg text-yellow-200 mb-8 text-center">
+            주변 사람들과 함께, 길었던 24년을 되돌아보고, 25년에 대해 이야기 해
+            보세요!
+          </p>
+          <div className="flex place-content-center">
+            <motion.button
+              className="bg-yellow-700 text-yellow-100 px-6 py-3 rounded-full text-xl font-semibold hover:bg-yellow-800 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={wrapProgressBar(handleShowQuestion)}
+            >
+              질문지 보기
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+      <AnimatePresence>
+        {showCard && (
+          <QuestionCard
+            question={currentQuestion}
+            onClose={handleCloseCard}
+            onPrev={wrapProgressBar(handleClickPrev)}
+            onCreateQuestion={wrapProgressBar(handleClickCreateQuestion)}
+            isLoading={questionCardLoading}
+            isDisablePrev={prevQuestionIndexes.length === 0}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        )}
+      </AnimatePresence>
+    </main>
   );
 }
